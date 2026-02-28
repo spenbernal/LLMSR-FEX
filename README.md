@@ -9,7 +9,7 @@ Official Implementation of paper [LLM-SR: Scientific Equation Discovery via Prog
 
 
 ## Updates
-- Our recent more comprehensive benchmark [LLM-SRBench: A New Benchmark for Scientific Equation Discovery with Large Language Models](https://arxiv.org/abs/2504.10415) **(to appear at ICML 2025 as Ora;)** is released following this work to effectively test LLM-based scientific discovery methods beyond memorization. Check out the benchmark data on [huggingface](https://huggingface.co/datasets/nnheui/llm-srbench) and evaluation codes [here](https://github.com/deep-symbolic-mathematics/llm-srbench).
+- Our recent more comprehensive benchmark [LLM-SRBench: A New Benchmark for Scientific Equation Discovery with Large Language Models](https://arxiv.org/abs/2504.10415) **(to appear at ICML 2025 as Oral)** is released following this work to effectively test LLM-based scientific equation discovery methods beyond memorization. Check out the benchmark data on [huggingface](https://huggingface.co/datasets/nnheui/llm-srbench) and evaluation codes [here](https://github.com/deep-symbolic-mathematics/llm-srbench).
 
 
 
@@ -136,13 +136,16 @@ Read our [paper](https://arxiv.org/abs/2404.18400) for more information about th
 </pre>
 
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=deep-symbolic-mathematics/LLM-SR&type=Date)](https://www.star-history.com/#deep-symbolic-mathematics/LLM-SR&Date)
+
+
+
 ## License 
 This repository is licensed under MIT licence.
 
-
-
 This work is built on top of other open source projects, including [FunSearch](https://github.com/google-deepmind/funsearch), [PySR](https://github.com/MilesCranmer/PySR), and [Neural Symbolic Regression that scales](https://github.com/SymposiumOrganization/NeuralSymbolicRegressionThatScales). We thank the original contributors of these works for open-sourcing their valuable source codes. 
-
 
 
 ## Contact Us

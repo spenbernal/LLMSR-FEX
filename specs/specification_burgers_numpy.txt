@@ -1,0 +1,106 @@
+"""
+Find a sparse mathematical function skeleton (RHS) for a 2D nonlinear convection–diffusion PDE.
+
+You are given supervised data where:
+- inputs are samples of u, v and their spatial derivatives up to 2nd order:
+  (u, u_x, u_y, u_xx, u_xy, u_yy, v, v_x, v_y, v_xx, v_xy, v_yy)
+- outputs are samples of u_t (e.g., (u^{n+1} - u^n)/dt)
+
+The evolved function `equation(...)` should return a design matrix Phi (N,k) of candidate terms.
+Coefficients are refit automatically in `evaluate(...)` via ridge-regularized least squares.
+Score returned is -NMSE (higher is better).
+"""
+
+import numpy as np
+
+RIDGE = 1e-8  # stability for normal equations; tune 1e-6..1e-10 as needed
+
+
+@evaluate.run
+def evaluate(data: dict) -> float:
+    """
+    Evaluate the current evolved equation skeleton on data.
+    The skeleton returns Phi (N,k); we refit coefficients c to minimize MSE/NMSE.
+    Returns a scalar score (higher is better).
+    """
+    inputs = data["inputs"]                         # (N, 12)
+    y = data["outputs"].reshape(-1).astype(float)   # (N,)
+
+    # Unpack channels (fixed ordering)
+    u, u_x, u_y, u_xx, u_xy, u_yy, v, v_x, v_y, v_xx, v_xy, v_yy = (
+        inputs[:, 0], inputs[:, 1], inputs[:, 2], inputs[:, 3], inputs[:, 4], inputs[:, 5],
+        inputs[:, 6], inputs[:, 7], inputs[:, 8], inputs[:, 9], inputs[:, 10], inputs[:, 11]
+    )
+
+    # Build design matrix from evolved skeleton
+    Phi = equation(u, u_x, u_y, u_xx, u_xy, u_yy, v, v_x, v_y, v_xx, v_xy, v_yy)
+    Phi = np.asarray(Phi)
+
+    # Ensure Phi is 2D: (N, k)
+    if Phi.ndim == 1:
+        Phi = Phi.reshape(-1, 1)
+
+    # Basic checks
+    if Phi.shape[0] != y.shape[0]:
+        return None
+    if Phi.shape[1] == 0:
+        return None
+    if np.any(~np.isfinite(Phi)) or np.any(~np.isfinite(y)):
+        return None
+
+    # Ridge-regularized least squares: (Phi^T Phi + λI)c = Phi^T y
+    k = Phi.shape[1]
+    A = Phi.T @ Phi + RIDGE * np.eye(k)
+    b = Phi.T @ y
+
+    try:
+        c = np.linalg.solve(A, b)
+    except np.linalg.LinAlgError:
+        return None
+
+    y_hat = Phi @ c
+
+    # Score: NMSE (scale-free)
+    mse = np.mean((y_hat - y) ** 2)
+    var = np.var(y)
+    nmse = mse / (var + 1e-12)
+
+    if not np.isfinite(nmse):
+        return None
+
+    return -nmse
+
+
+@equation.evolve
+def equation(u, u_x, u_y, u_xx, u_xy, u_yy, v, v_x, v_y, v_xx, v_xy, v_yy):
+    """
+    Return a design matrix Phi (N,k). The LLM will evolve this function by
+    adding/removing/modifying columns (candidate terms).
+    Coefficients are fit in evaluate().
+
+    Keep operations simple (add/subtract/multiply) for interpretability.
+    """
+    Phi = np.column_stack([
+        # Linear terms
+        u,
+        v,
+        u_x,
+        u_y,
+        v_x,
+        v_y,
+        u_xx,
+        u_yy,
+        v_xx,
+        v_yy,
+
+        # Nonlinear/product terms (convection-like and interactions)
+        u * u_x,
+        v * u_y,
+        u * v,
+        u_x * u_y,
+        v_x * v_y,
+
+        # Bias term
+        np.ones_like(u),
+    ])
+    return Phi

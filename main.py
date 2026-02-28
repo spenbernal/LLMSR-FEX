@@ -29,7 +29,7 @@ if __name__ == '__main__':
     class_config = config.ClassConfig(llm_class=sampler.LocalLLM, sandbox_class=evaluator.LocalSandbox)
     config = config.Config(use_api = args.use_api, 
                            api_model = args.api_model,)
-    global_max_sample_num = 10000 
+    global_max_sample_num = 655360 #10000 
 
     # Load prompt specification
     with open(
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     
     # Load dataset
     problem_name = args.problem_name
-    df = pd.read_csv('./data/'+problem_name+'/train.csv')
+    df = pd.read_csv('./data/'+problem_name+'/train.csv', header= None)
     data = np.array(df)
     X = data[:, :-1]
     y = data[:, -1].reshape(-1)
