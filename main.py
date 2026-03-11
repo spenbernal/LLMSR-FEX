@@ -42,8 +42,8 @@ if __name__ == '__main__':
     problem_name = args.problem_name
     df = pd.read_csv('./data/'+problem_name+'/train.csv', header= None)
     data = np.array(df)
-    X = data[:, :-1]
-    y = data[:, -1].reshape(-1)
+    X = np.array(data[:, :-1])
+    y = np.array(data[:, -1].reshape(-1))
     if 'torch' in args.spec_path:
         X = torch.Tensor(X)
         y = torch.Tensor(y)
